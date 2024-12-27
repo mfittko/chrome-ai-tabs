@@ -1,0 +1,20 @@
+{
+  "name": "Tab Grouper",
+  "version": "1.0.0",
+  "description": "Automatically group tabs by category using OpenAI",
+  "manifest_version": 3,
+  "permissions": [
+    "tabs",
+    "storage"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup/popup.html"
+  },
+  "options_ui": {
+    "page": "options/options.html",
+    "open_in_tab": true
+  }
+}
