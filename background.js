@@ -1,6 +1,6 @@
 // Export key functions for testing
-export const initialize = () => {
-chrome.tabs.onCreated.addListener(handleNewTab);
+function initialize() {
+  chrome.tabs.onCreated.addListener(handleNewTab);
 };
 
 // Only run initialization code when in browser extension context
@@ -32,7 +32,7 @@ function getCategories() {
   });
 }
 
-export async function categorizeTab(url, title, categories) {
+async function categorizeTab(url, title, categories) {
 const apiKey = await getApiKey();
 const model = await getModel();
 
@@ -62,7 +62,7 @@ const model = await getModel();
   return data.choices[0].message.content.trim();
 }
 
-export function getApiKey() {
+function getApiKey() {
 return new Promise((resolve) => {
     chrome.storage.sync.get(['openaiApiKey'], (items) => {
     resolve(items.openaiApiKey || '');
@@ -70,7 +70,7 @@ return new Promise((resolve) => {
 });
 }
 
-export function getModel() {
+function getModel() {
 return new Promise((resolve) => {
     chrome.storage.sync.get(['openaiModel'], (items) => {
     resolve(items.openaiModel || 'gpt-4o-mini');
@@ -88,8 +88,18 @@ if (typeof chrome !== 'undefined' && chrome.runtime) {
 initialize();
 }
 
-export const __test_exports = {
+const __test_exports = {
 handleNewTab,
 getCategories,
 groupTab
 };
+
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = {
+    initialize,
+    categorizeTab,
+    getApiKey,
+    getModel,
+    __test_exports
+  };
+}
