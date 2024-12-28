@@ -2,10 +2,33 @@
 <html>
   <head>
     <title>Tab Grouper Popup</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        margin: 10px;
+      }
+      h1 {
+        margin-top: 0;
+      }
+      label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      button {
+        margin-top: 10px;
+      }
+    </style>
   </head>
   <body>
     <h1>Tab Grouper</h1>
-    <p>Welcome to the Tab Grouper Extension!</p>
+    <label>
+      <input type="checkbox" id="toggleCategorization" />
+      Enable Auto-Categorization
+    </label>
+    <button id="regroupBtn">Regroup All Tabs</button>
+    <div id="statusMessage"></div>
+
     <script src="popup.js"></script>
   </body>
 </html>
