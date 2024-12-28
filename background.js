@@ -1,10 +1,14 @@
-chrome.runtime.onInstalled.addListener(() => {
-  console.log('Tab Grouper Extension installed.');
-  initialize();
-});
+// Export key functions for testing
+export const initialize = () => {
+chrome.tabs.onCreated.addListener(handleNewTab);
+};
 
-function initialize() {
-  chrome.tabs.onCreated.addListener(handleNewTab);
+// Only run initialization code when in browser extension context
+if (typeof chrome !== 'undefined' && chrome.runtime) {
+chrome.runtime.onInstalled.addListener(() => {
+    console.log('Tab Grouper Extension installed.');
+    initialize();
+});
 }
 
 async function handleNewTab(tab) {
@@ -28,9 +32,9 @@ function getCategories() {
   });
 }
 
-async function categorizeTab(url, title, categories) {
-  const apiKey = await getApiKey();
-  const model = await getModel();
+export async function categorizeTab(url, title, categories) {
+const apiKey = await getApiKey();
+const model = await getModel();
 
   const response = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
@@ -58,20 +62,20 @@ async function categorizeTab(url, title, categories) {
   return data.choices[0].message.content.trim();
 }
 
-function getApiKey() {
-  return new Promise((resolve) => {
+export function getApiKey() {
+return new Promise((resolve) => {
     chrome.storage.sync.get(['openaiApiKey'], (items) => {
-      resolve(items.openaiApiKey || '');
+    resolve(items.openaiApiKey || '');
     });
-  });
+});
 }
 
-function getModel() {
-  return new Promise((resolve) => {
+export function getModel() {
+return new Promise((resolve) => {
     chrome.storage.sync.get(['openaiModel'], (items) => {
-      resolve(items.openaiModel || 'gpt-4o-mini');
+    resolve(items.openaiModel || 'gpt-4o-mini');
     });
-  });
+});
 }
 
 function groupTab(tabId, category) {
@@ -80,4 +84,12 @@ function groupTab(tabId, category) {
   });
 }
 
+if (typeof chrome !== 'undefined' && chrome.runtime) {
 initialize();
+}
+
+export const __test_exports = {
+handleNewTab,
+getCategories,
+groupTab
+};
