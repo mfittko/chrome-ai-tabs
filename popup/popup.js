@@ -1,29 +1,121 @@
-document.addEventListener('DOMContentLoaded', () => {
-  const toggleCategorization = document.getElementById('toggleCategorization');
-  const regroupBtn = document.getElementById('regroupBtn');
-  const statusMessage = document.getElementById('statusMessage');
-
-  // 1. Load any saved settings (e.g., autoCategorize) from storage
-  chrome.storage.sync.get(['autoCategorize'], (result) => {
+// Functions for testing
+export async function loadSettings(toggleCategorization, statusMessage) {
+try {
+    const result = await new Promise((resolve, reject) => {
+    chrome.storage.sync.get(['autoCategorize'], (result) => {
+        if (chrome.runtime.lastError) {
+        reject(chrome.runtime.lastError);
+        } else {
+        resolve(result);
+        }
+    });
+    });
+    
     toggleCategorization.checked = !!result.autoCategorize;
     statusMessage.textContent = `Auto-categorization is ${toggleCategorization.checked ? 'ON' : 'OFF'}`;
-  });
+    return result;
+} catch (error) {
+    console.error('Failed to load settings:', error);
+    statusMessage.textContent = 'Failed to load settings';
+    throw error;
+}
+}
 
-  // 2. Toggle automatic categorization on checkbox change
-  toggleCategorization.addEventListener('change', () => {
-    const isChecked = toggleCategorization.checked;
+export async function saveSettings(isChecked, statusMessage) {
+try {
+    await new Promise((resolve, reject) => {
     chrome.storage.sync.set({ autoCategorize: isChecked }, () => {
-      console.log('Auto-categorization set to', isChecked);
-      statusMessage.textContent = `Auto-categorization is ${isChecked ? 'ON' : 'OFF'}`;
-      // Optionally show user feedback
+        if (chrome.runtime.lastError) {
+        reject(chrome.runtime.lastError);
+        } else {
+        resolve();
+        }
     });
-  });
+    });
+    
+    console.log('Auto-categorization set to', isChecked);
+    statusMessage.textContent = `Auto-categorization is ${isChecked ? 'ON' : 'OFF'}`;
+} catch (error) {
+    console.error('Failed to save settings:', error);
+    statusMessage.textContent = 'Failed to save settings';
+    throw error;
+}
+}
 
-  // 3. Send a "regroup" message to background.js on button click
-  regroupBtn.addEventListener('click', () => {
-    chrome.runtime.sendMessage({ action: 'RE_CATEGORIZE_ALL' }, response => {
-      console.log('Regroup request sent. Response:', response);
-      statusMessage.textContent = 'Tabs regrouped!';
+export async function regroupTabs(statusMessage) {
+try {
+    const response = await new Promise((resolve, reject) => {
+    chrome.runtime.sendMessage({ action: 'RE_CATEGORIZE_ALL' }, (response) => {
+        if (chrome.runtime.lastError) {
+        reject(chrome.runtime.lastError);
+        } else {
+        resolve(response);
+        }
     });
-  });
+    });
+    
+    console.log('Regroup request sent. Response:', response);
+    statusMessage.textContent = 'Tabs regrouped!';
+    return response;
+} catch (error) {
+    console.error('Failed to regroup tabs:', error);
+    statusMessage.textContent = 'Failed to regroup tabs';
+    throw error;
+}
+}
+
+export function initialize(doc = document) {
+    const toggleCategorization = doc.getElementById('toggleCategorization');
+    const regroupBtn = doc.getElementById('regroupBtn');
+    const statusMessage = doc.getElementById('statusMessage');
+    
+    console.log('Using provided document:', doc === document ? 'global' : 'custom');
+
+console.log('Element details:', {
+    toggleCategorization: toggleCategorization ? {
+        tagName: toggleCategorization.tagName,
+        id: toggleCategorization.id,
+        type: toggleCategorization.type
+    } : null,
+    regroupBtn: regroupBtn ? {
+        tagName: regroupBtn.tagName,
+        id: regroupBtn.id
+    } : null,
+    statusMessage: statusMessage ? {
+        tagName: statusMessage.tagName,
+        id: statusMessage.id
+    } : null
 });
+
+const missingElements = [];
+if (!toggleCategorization) missingElements.push('toggleCategorization');
+if (!regroupBtn) missingElements.push('regroupBtn');
+if (!statusMessage) missingElements.push('statusMessage');
+
+if (missingElements.length > 0) {
+    throw new Error(`Required DOM elements not found: ${missingElements.join(', ')}`);
+}
+
+// Load initial settings
+loadSettings(toggleCategorization, statusMessage).catch(console.error);
+
+// Set up event listeners
+toggleCategorization.addEventListener('change', () => {
+    saveSettings(toggleCategorization.checked, statusMessage).catch(console.error);
+});
+
+regroupBtn.addEventListener('click', () => {
+    regroupTabs(statusMessage).catch(console.error);
+});
+
+return {
+    toggleCategorization,
+    regroupBtn,
+    statusMessage
+};
+}
+
+// Only run initialization in browser context
+// if (typeof window !== 'undefined' && typeof jest === 'undefined') {
+//   document.addEventListener('DOMContentLoaded', initialize);
+// }
