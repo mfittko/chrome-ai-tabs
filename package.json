@@ -1,19 +1,27 @@
 {
   "name": "chrome-ai-tabs",
   "version": "1.0.0",
+  "description": "Chrome extension for AI-powered tab management",
   "main": "index.js",
   "scripts": {
-    "test": "jest"
+      "test": "jest"
   },
-  "keywords": [],
-  "author": "",
+  "repository": {
+      "type": "git",
+      "url": "git+https://github.com/mfittko/chrome-ai-tabs.git"
+  },
+  "keywords": [
+      "chrome-extension",
+      "tab-management",
+      "ai"
+  ],
+  "author": "Manuel Fittko",
   "license": "ISC",
-  "description": "",
   "devDependencies": {
-    "@babel/core": "^7.26.0",
-    "@babel/preset-env": "^7.26.0",
-    "babel-jest": "^29.7.0",
-    "jest": "^27.5.1",
-    "jest-chrome": "^0.8.0"
+      "@babel/core": "^7.26.0",
+      "@babel/preset-env": "^7.26.0",
+      "babel-jest": "^27.5.1",
+      "jest": "^27.5.1",
+      "jest-chrome": "^0.8.0"
   }
 }
