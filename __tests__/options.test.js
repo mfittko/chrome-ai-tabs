@@ -1,41 +1,64 @@
 import 'jest-chrome';
+import { initialize, saveOptions, restoreOptions } from '../options/options.js';
 
 describe('options.js', () => {
-  beforeEach(() => {
+beforeEach(async () => {
     document.body.innerHTML = `
-      <label>
+    <label>
         OpenAI API Key:
         <input type="text" id="apiKeyInput" />
-      </label>
-      <br />
-      <label>
+    </label>
+    <br />
+    <label>
         OpenAI Model:
         <input type="text" id="modelInput" />
-      </label>
-      <br />
-      <label>
+    </label>
+    <br />
+    <label>
         Pre-configured Categories (comma-separated):
         <input type="text" id="categoriesInput" />
-      </label>
-      <br />
-      <button id="saveButton">Save</button>
+    </label>
+    <br />
+    <button id="saveButton">Save</button>
     `;
-    require('../options/options.js');
-  });
+    
+    // Initialize options page
+    await initialize();
+});
 
-  it('should save options to chrome storage', () => {
+afterEach(() => {
+    jest.clearAllMocks();
+});
+
+it('should save options to chrome storage', async () => {
+    // Mock chrome storage set to return a promise
+    chrome.storage.sync.set.mockImplementation((data, callback) => {
+    callback();
+    return Promise.resolve();
+    });
+
+    // Set input values
     document.getElementById('apiKeyInput').value = 'test-api-key';
     document.getElementById('modelInput').value = 'test-model';
     document.getElementById('categoriesInput').value = 'category1,category2';
 
-    document.getElementById('saveButton').click();
+    // Trigger save
+    const saveButton = document.getElementById('saveButton');
+    await new Promise(resolve => {
+    chrome.storage.sync.set.mockImplementation((data, callback) => {
+        callback();
+        resolve();
+    });
+    saveButton.click();
+    });
 
+    // Verify storage was updated
     expect(chrome.storage.sync.set).toHaveBeenCalledWith({
-      openaiApiKey: 'test-api-key',
-      openaiModel: 'test-model',
-      preConfiguredCategories: ['category1', 'category2']
+    openaiApiKey: 'test-api-key',
+    openaiModel: 'test-model',
+    preConfiguredCategories: ['category1', 'category2']
     }, expect.any(Function));
-  });
+});
 
   it('should restore options from chrome storage', () => {
     chrome.storage.sync.get.mockImplementation((keys, callback) => {

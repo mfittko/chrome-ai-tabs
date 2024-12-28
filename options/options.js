@@ -1,28 +1,43 @@
 // options.js
 
-function saveOptions() {
-  const apiKey = document.getElementById('apiKeyInput').value;
-  const model = document.getElementById('modelInput').value;
-  const categories = document.getElementById('categoriesInput').value.split(',');
+export function saveOptions() {
+const apiKey = document.getElementById('apiKeyInput').value;
+const model = document.getElementById('modelInput').value;
+const categories = document.getElementById('categoriesInput').value.split(',');
 
-  chrome.storage.sync.set({
+chrome.storage.sync.set({
     openaiApiKey: apiKey,
     openaiModel: model,
     preConfiguredCategories: categories
-  }, () => {
+}, () => {
     console.log('Options saved!');
-  });
+});
 }
 
-function restoreOptions() {
-  chrome.storage.sync.get(['openaiApiKey', 'openaiModel', 'preConfiguredCategories'], (items) => {
+export function restoreOptions() {
+return new Promise((resolve) => {
+    chrome.storage.sync.get(['openaiApiKey', 'openaiModel', 'preConfiguredCategories'], (items) => {
     document.getElementById('apiKeyInput').value = items.openaiApiKey || '';
     document.getElementById('modelInput').value = items.openaiModel || '';
     document.getElementById('categoriesInput').value = items.preConfiguredCategories ? items.preConfiguredCategories.join(',') : '';
-  });
+    resolve(items);
+    });
+});
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  restoreOptions();
-  document.getElementById('saveButton').addEventListener('click', saveOptions);
-});
+export function initialize() {
+restoreOptions();
+document.getElementById('saveButton').addEventListener('click', saveOptions);
+}
+
+// Only run in browser context
+if (typeof window !== 'undefined' && window.document) {
+document.addEventListener('DOMContentLoaded', initialize);
+}
+
+// Export for testing
+export default {
+saveOptions,
+restoreOptions,
+initialize
+};
