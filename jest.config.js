@@ -1,4 +1,22 @@
 module.exports = {
-  testEnvironment: 'node',
-  setupFilesAfterEnv: ['jest-chrome']
+testEnvironment: 'jsdom',
+setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
+transform: {
+    '^.+\\.js$': ['babel-jest', {
+    presets: [
+        ['@babel/preset-env', { targets: { node: 'current' } }]
+    ]
+    }]
+},
+transformIgnorePatterns: [
+    '/node_modules/(?!(jest-chrome)/)'
+],
+moduleNameMapper: {
+    '^chrome$': 'jest-chrome'
+},
+testMatch: [
+    '**/__tests__/**/*.js',
+    '**/?(*.)+(spec|test).js'
+],
+verbose: true
 };
