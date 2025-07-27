@@ -5,7 +5,7 @@ const apiKey = document.getElementById('apiKeyInput').value;
 const model = document.getElementById('modelInput').value;
 const categories = document.getElementById('categoriesInput').value.split(',');
 
-chrome.storage.sync.set({
+chrome.storage.local.set({
     openaiApiKey: apiKey,
     openaiModel: model,
     preConfiguredCategories: categories
@@ -16,7 +16,7 @@ chrome.storage.sync.set({
 
 export function restoreOptions() {
 return new Promise((resolve) => {
-    chrome.storage.sync.get(['openaiApiKey', 'openaiModel', 'preConfiguredCategories'], (items) => {
+    chrome.storage.local.get(['openaiApiKey', 'openaiModel', 'preConfiguredCategories'], (items) => {
     document.getElementById('apiKeyInput').value = items.openaiApiKey || '';
     document.getElementById('modelInput').value = items.openaiModel || '';
     document.getElementById('categoriesInput').value = items.preConfiguredCategories ? items.preConfiguredCategories.join(',') : '';

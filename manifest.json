@@ -5,10 +5,18 @@
   "manifest_version": 3,
   "permissions": [
     "tabs",
-    "storage"
+    "scripting",
+    "storage",
+    "tabGroups",
+    "activeTab"
+  ],
+  "host_permissions": [
+    "http://*/*",
+    "https://*/*"
   ],
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "background.js",
+    "type": "module"
   },
   "action": {
     "default_popup": "popup/popup.html"
@@ -16,5 +24,11 @@
   "options_ui": {
     "page": "options/options.html",
     "open_in_tab": true
-  }
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["popup/popup.js"],
+      "matches": ["<all_urls>"]
+    }
+  ]
 }
