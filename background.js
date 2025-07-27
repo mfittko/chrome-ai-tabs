@@ -1,3 +1,20 @@
+// Import batch processing modules (if available)
+let batchProcessor, batchApi, batchGrouper;
+try {
+  // These will be imported if the files exist
+  if (typeof importScripts !== 'undefined') {
+    importScripts('batch-processor.js', 'batch-api.js', 'batch-grouper.js');
+  }
+  // For module environments
+  if (typeof require !== 'undefined') {
+    batchProcessor = require('./batch-processor.js');
+    batchApi = require('./batch-api.js');
+    batchGrouper = require('./batch-grouper.js');
+  }
+} catch (error) {
+  console.log('Batch processing modules not available, using fallback individual processing');
+}
+
 // Export key functions for testing
 function initialize() {
   chrome.tabs.onCreated.addListener(handleNewTab);
@@ -8,13 +25,66 @@ function initialize() {
 async function handleMessage(request, sender, sendResponse) {
   if (request.action === 'RE_CATEGORIZE_ALL') {
     try {
-      await regroupAllTabs();
+      await regroupAllTabsBatch();
       sendResponse('OK');
     } catch (error) {
       console.error('Failed to regroup tabs:', error);
       sendResponse('ERROR');
     }
     return true; // Keep message channel open for async response
+  }
+}
+
+/**
+ * New batch-enabled regrouping function with fallback to individual processing
+ */
+async function regroupAllTabsBatch() {
+  try {
+    console.log('Starting batch regrouping of all tabs...');
+    
+    // Try batch processing first if modules are available
+    if (batchProcessor && batchApi && batchGrouper) {
+      console.log('Using batch processing approach');
+      
+      // Step 1: Collect and process all tabs
+      const processedTabs = await batchProcessor.collectAndProcessTabs();
+      console.log(`Collected ${processedTabs.length} tabs for batch processing`);
+      
+      if (processedTabs.length === 0) {
+        console.log('No valid tabs found for processing');
+        return;
+      }
+      
+      // Step 2: Get existing categories
+      const existingCategories = await getCategories();
+      console.log(`Using categories: ${existingCategories.join(', ')}`);
+      
+      // Step 3: Send batch to OpenAI for categorization
+      const categorizationResult = await batchApi.categorizeBatch(processedTabs, existingCategories);
+      console.log(`AI categorization completed for ${categorizationResult.categorizedTabs.length} tabs`);
+      
+      // Step 4: Create groups based on categorization
+      const groupingResult = await batchGrouper.batchCreateGroups(categorizationResult.categorizedTabs);
+      console.log(`Group creation completed: ${groupingResult.created} created, ${groupingResult.updated} updated`);
+      
+      console.log('Batch regrouping completed successfully');
+      return;
+    }
+    
+    // Fallback to individual processing if batch modules aren't available
+    console.log('Falling back to individual processing');
+    await regroupAllTabs();
+    
+  } catch (error) {
+    console.error('Batch regrouping failed, attempting fallback:', error);
+    
+    // Final fallback to individual processing
+    try {
+      await regroupAllTabs();
+    } catch (fallbackError) {
+      console.error('Fallback individual processing also failed:', fallbackError);
+      throw fallbackError;
+    }
   }
 }
 
@@ -192,6 +262,7 @@ handleNewTab,
 getCategories,
 groupTabByCategory,
 regroupAllTabs,
+regroupAllTabsBatch,
 handleMessage
 };
 
@@ -202,6 +273,7 @@ if (typeof module !== 'undefined' && module.exports) {
     getApiKey,
     getModel,
     regroupAllTabs,
+    regroupAllTabsBatch,
     handleMessage,
     __test_exports
   };
