@@ -44,6 +44,8 @@ try {
 
 export async function regroupTabs(statusMessage) {
 try {
+    statusMessage.textContent = 'Starting tab regrouping...';
+    
     const response = await new Promise((resolve, reject) => {
     chrome.runtime.sendMessage({ action: 'RE_CATEGORIZE_ALL' }, (response) => {
         if (chrome.runtime.lastError) {
@@ -55,11 +57,17 @@ try {
     });
     
     console.log('Regroup request sent. Response:', response);
-    statusMessage.textContent = 'Tabs regrouped!';
+    
+    if (response === 'OK') {
+        statusMessage.textContent = 'Tabs regrouped successfully!';
+    } else {
+        statusMessage.textContent = 'Regrouping completed with some issues';
+    }
+    
     return response;
 } catch (error) {
     console.error('Failed to regroup tabs:', error);
-    statusMessage.textContent = 'Failed to regroup tabs';
+    statusMessage.textContent = 'Failed to regroup tabs - check console for details';
     throw error;
 }
 }
