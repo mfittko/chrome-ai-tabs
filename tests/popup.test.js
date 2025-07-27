@@ -7,7 +7,7 @@ let initialize;
 
 beforeAll(async () => {
     // Mock chrome storage API
-    chrome.storage.sync.get.mockImplementation((keys, cb) => {
+    chrome.storage.local.get.mockImplementation((keys, cb) => {
       const mockStorage = {
         autoCategorize: true
       };
@@ -60,7 +60,7 @@ beforeAll(async () => {
     console.log('Window context:', window === global.window ? 'same' : 'different');
 
     // Set up mock implementations
-    chrome.storage.sync.set.mockImplementation((data, cb) => {
+    chrome.storage.local.set.mockImplementation((data, cb) => {
     cb && cb();
     });
 
@@ -86,8 +86,8 @@ beforeAll(async () => {
 
 afterEach(() => {
     // Reset chrome API mocks
-    chrome.storage.sync.get.mockClear();
-    chrome.storage.sync.set.mockClear();
+    chrome.storage.local.get.mockClear();
+    chrome.storage.local.set.mockClear();
     chrome.runtime.sendMessage.mockClear();
 
     // Reset DOM content using the correct document context
@@ -117,7 +117,7 @@ test('toggles auto-categorization', async () => {
     checkbox.checked = !checkbox.checked;
     checkbox.dispatchEvent(new dom.window.Event('change'));
     await Promise.resolve();  // Wait for next tick
-    expect(chrome.storage.sync.set).toHaveBeenCalledWith(
+    expect(chrome.storage.local.set).toHaveBeenCalledWith(
     { autoCategorize: false },
     expect.any(Function)
     );

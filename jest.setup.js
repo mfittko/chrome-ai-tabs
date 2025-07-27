@@ -62,7 +62,7 @@ openaiModel: 'gpt-3.5-turbo',
 preConfiguredCategories: []
 }
 
-chrome.storage.sync.get.mockImplementation((keys, callback) => {
+chrome.storage.local.get.mockImplementation((keys, callback) => {
 const result = typeof keys === 'string' 
     ? { [keys]: defaultStorageValues[keys] }
     : Array.isArray(keys)
@@ -72,7 +72,7 @@ if (callback) callback(result)
 return Promise.resolve(result)
 })
 
-chrome.storage.sync.set.mockImplementation((items, callback) => {
+chrome.storage.local.set.mockImplementation((items, callback) => {
 Object.assign(defaultStorageValues, items)
 if (callback) callback()
 return Promise.resolve()
