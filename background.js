@@ -1,11 +1,14 @@
 // Import batch processing modules (if available)
 let batchProcessor, batchApi, batchGrouper;
 try {
-  // These will be imported if the files exist
+  // Import scripts in service worker context
   if (typeof importScripts !== 'undefined') {
     importScripts('batch-processor.js', 'batch-api.js', 'batch-grouper.js');
+    batchProcessor = { collectAndProcessTabs };
+    batchApi = { categorizeBatch };
+    batchGrouper = { batchCreateGroups };
   }
-  // For module environments
+  // For module environments (testing)
   if (typeof require !== 'undefined') {
     batchProcessor = require('./batch-processor.js');
     batchApi = require('./batch-api.js');
@@ -47,6 +50,7 @@ async function regroupAllTabsBatch() {
       console.log('Using batch processing approach');
       
       // Step 1: Collect and process all tabs
+      console.log('Step 1/4: Collecting tabs...');
       const processedTabs = await batchProcessor.collectAndProcessTabs();
       console.log(`Collected ${processedTabs.length} tabs for batch processing`);
       
@@ -56,18 +60,25 @@ async function regroupAllTabsBatch() {
       }
       
       // Step 2: Get existing categories
+      console.log('Step 2/4: Loading categories...');
       const existingCategories = await getCategories();
       console.log(`Using categories: ${existingCategories.join(', ')}`);
       
       // Step 3: Send batch to OpenAI for categorization
+      console.log('Step 3/4: AI categorization in progress...');
       const categorizationResult = await batchApi.categorizeBatch(processedTabs, existingCategories);
       console.log(`AI categorization completed for ${categorizationResult.categorizedTabs.length} tabs`);
       
       // Step 4: Create groups based on categorization
+      console.log('Step 4/4: Creating tab groups...');
       const groupingResult = await batchGrouper.batchCreateGroups(categorizationResult.categorizedTabs);
       console.log(`Group creation completed: ${groupingResult.created} created, ${groupingResult.updated} updated`);
       
-      console.log('Batch regrouping completed successfully');
+      if (groupingResult.errors.length > 0) {
+        console.warn(`Some errors occurred during grouping: ${groupingResult.errors.length} errors`);
+      }
+      
+      console.log('✅ Batch regrouping completed successfully');
       return;
     }
     

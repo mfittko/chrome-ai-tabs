@@ -133,6 +133,6 @@ const statusMessage = dom.window.document.getElementById('statusMessage');
       { action: 'RE_CATEGORIZE_ALL' },
       expect.any(Function)
   );
-  expect(statusMessage.textContent).toBe('Tabs regrouped!');
+  expect(statusMessage.textContent).toBe('Tabs regrouped successfully!');
   });
 });
