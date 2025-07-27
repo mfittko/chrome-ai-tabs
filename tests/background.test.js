@@ -1,5 +1,7 @@
 import 'jest-chrome';
-import { categorizeTab, getApiKey, getModel } from '../background.js';
+import { categorizeTab, getApiKey, getModel, __test_exports } from '../background.js';
+
+const { getCategories } = __test_exports;
 
 describe('background.js', () => {
 beforeEach(() => {
@@ -62,5 +64,27 @@ it('should get model from storage', async () => {
 
     const model = await getModel();
     expect(model).toBe(mockModel);
+});
+
+it('should return default categories when none are configured', async () => {
+    chrome.storage.sync.get.mockImplementation((keys, callback) => {
+        callback({ preConfiguredCategories: [] });
+    });
+
+    const categories = await getCategories();
+    expect(categories).toEqual([
+        'Work', 'Social Media', 'News', 'Entertainment', 
+        'Shopping', 'Research', 'Documentation', 'Developer Tools'
+    ]);
+});
+
+it('should return configured categories when available', async () => {
+    const mockCategories = ['Custom1', 'Custom2', 'Custom3'];
+    chrome.storage.sync.get.mockImplementation((keys, callback) => {
+        callback({ preConfiguredCategories: mockCategories });
+    });
+
+    const categories = await getCategories();
+    expect(categories).toEqual(mockCategories);
 });
 });
